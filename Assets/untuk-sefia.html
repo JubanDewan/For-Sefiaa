@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untuk Sefia</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+
+/* ============================================================
+   MUSIK: cara memasukkan lagu ada di penjelasan setelah kode ini.
+   Cari komentar "GANTI DI SINI" di bagian bawah file (dekat tag
+   <iframe id="musicFrame">) untuk mengganti lagunya.
+   ============================================================ */
+
+:root{
+  --ink-light:#f6ecd9;
+  --ink-dark:#1a1220;
+  --serif: 'Iowan Old Style', 'Palatino Linotype', 'Georgia', serif;
+  --script: 'Segoe Script', 'Brush Script MT', cursive;
+}
+
+@font-face{ /* fallback-safe, no external font fetch needed */ }
+
+*{box-sizing:border-box; margin:0; padding:0;}
+
+html{scroll-behavior:smooth;}
+
+body{
+  font-family: var(--serif);
+  color: var(--ink-light);
+  background:#05060f;
+  overflow-x:hidden;
+}
+
+/* ---------------- stars (used in night chapters) ---------------- */
+.stars{
+  position:absolute; inset:0; overflow:hidden; pointer-events:none;
+}
+.stars span{
+  position:absolute; width:2px; height:2px; border-radius:50%;
+  background:rgba(255,255,255,.8);
+  animation: twinkle 4s ease-in-out infinite;
+}
+@keyframes twinkle{ 0%,100%{opacity:.15;} 50%{opacity:.9;} }
+
+/* ---------------- password gate ---------------- */
+#gate{
+  position:fixed; inset:0; z-index:100;
+  display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(ellipse at 50% 30%, #131a3a 0%, #05060f 70%);
+  transition: opacity 1.1s ease, visibility 1.1s ease;
+}
+#gate.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+
+.gate-box{
+  position:relative; z-index:2;
+  text-align:center;
+  padding:2.5rem 2rem;
+  max-width:380px;
+  width:90%;
+}
+.gate-box .eyebrow{
+  letter-spacing:.35em; text-transform:uppercase;
+  font-family:'Helvetica Neue',Arial,sans-serif;
+  font-size:.65rem; color:#9aa3d1; margin-bottom:1rem;
+}
+.gate-box h1{
+  font-size:1.6rem; font-weight:400; margin-bottom:.5rem;
+  color:#f6ecd9;
+}
+.gate-box p.sub{
+  font-size:.85rem; color:#b7bde0; margin-bottom:2rem; line-height:1.6;
+}
+#gate form{
+  display:flex; flex-direction:column; gap:.9rem; align-items:center;
+}
+#pwInput{
+  width:100%;
+  background:transparent;
+  border:none;
+  border-bottom:1px solid rgba(246,236,217,.35);
+  color:#f6ecd9;
+  font-size:1.4rem;
+  letter-spacing:.2em;
+  text-align:center;
+  padding:.6rem .2rem;
+  font-family:var(--serif);
+  outline:none;
+}
+#pwInput:focus{ border-bottom-color:#e8b85c; }
+#pwInput::placeholder{ color:rgba(246,236,217,.3); letter-spacing:.3em; font-size:1rem;}
+.gate-btn{
+  margin-top:.5rem;
+  background:none; border:1px solid rgba(246,236,217,.4);
+  color:#f6ecd9; padding:.65rem 2.2rem; border-radius:999px;
+  font-family:'Helvetica Neue',Arial,sans-serif; font-size:.75rem;
+  letter-spacing:.2em; text-transform:uppercase; cursor:pointer;
+  transition:.3s;
+}
+.gate-btn:hover{ background:rgba(246,236,217,.12); border-color:#e8b85c; }
+.gate-err{
+  min-height:1.2rem; font-size:.75rem; color:#e88b8b;
+  font-family:'Helvetica Neue',Arial,sans-serif;
+}
+.shake{ animation:shake .45s; }
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-8px);} 40%{transform:translateX(8px);}
+  60%{transform:translateX(-6px);} 80%{transform:translateX(6px);}
+}
+
+/* ---------------- story wrapper ---------------- */
+#story{ visibility:hidden; }
+#story.show{ visibility:visible; }
+
+section.chapter{
+  position:relative;
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:6rem 1.5rem;
+}
+.chapter-inner{
+  max-width:640px; width:100%;
+  position:relative; z-index:2;
+}
+.chapter .eyebrow{
+  font-family:'Helvetica Neue',Arial,sans-serif;
+  font-size:.68rem; letter-spacing:.35em; text-transform:uppercase;
+  opacity:.65; margin-bottom:1.1rem; display:block;
+}
+.chapter h2{
+  font-size:1.9rem; font-weight:400; margin-bottom:1.3rem;
+  line-height:1.3;
+}
+.chapter p{
+  font-size:1.05rem; line-height:1.9; margin-bottom:1.1rem;
+  opacity:.95;
+}
+.chapter p.quote{
+  font-style:italic; font-size:1.15rem; opacity:1;
+  padding-left:1.1rem; border-left:2px solid currentColor;
+  margin:1.6rem 0;
+}
+.chapter .heart-icon{
+  font-size:1.3rem; opacity:.7; margin-bottom:1.2rem; display:block;
+}
+
+/* fade-in on scroll */
+.chapter-inner{ opacity:0; transform:translateY(24px); transition:opacity 1s ease, transform 1s ease; }
+.chapter-inner.visible{ opacity:1; transform:translateY(0); }
+
+/* ---- chapter color themes (day-cycle) ---- */
+#gate-echo, .c0{ background:linear-gradient(180deg,#05060f,#0b1130); color:#f6ecd9; }
+.c1{ background:linear-gradient(180deg,#0b1130,#1b1b45); color:#f2ecff; }
+.c2{ background:linear-gradient(180deg,#1b1b45,#3a2e63); color:#f0e6ff; }
+.c3{ background:linear-gradient(180deg,#3a2e63,#7a4e7e); color:#fbe9ec; }
+.c4{ background:linear-gradient(180deg,#7a4e7e,#c97b84); color:#fff3ec; }
+.c5{ background:linear-gradient(180deg,#c97b84,#e9a98b); color:#3a2115; }
+.c6{ background:linear-gradient(180deg,#e9a98b,#cdd3d6); color:#2c2c34; }
+.c7{ background:linear-gradient(180deg,#cdd3d6,#e7c9a3); color:#3a2c1c; }
+.c8{ background:linear-gradient(180deg,#e7c9a3,#f0a35d); color:#3a2005; }
+.c9{ background:linear-gradient(180deg,#f0a35d,#8c3d5c); color:#fff2ea; }
+.c10{ background:linear-gradient(180deg,#8c3d5c,#432a5e); color:#f6e9ff; }
+.c11{ background:linear-gradient(180deg,#432a5e,#161235); color:#efe6ff; }
+.c12{ background:linear-gradient(180deg,#161235,#05060f); color:#f6ecd9; }
+
+/* signature divider element: a small waxing/waning moon phase mark unique to each chapter */
+.phase{
+  width:14px; height:14px; border-radius:50%;
+  margin-bottom:1.4rem;
+  box-shadow: inset -5px 0 0 0 currentColor;
+  opacity:.75;
+}
+
+/* ---------------- closing / contacts ---------------- */
+.contact-title{
+  font-size:1rem; letter-spacing:.15em;
+  font-family:'Helvetica Neue',Arial,sans-serif; opacity:.7; margin-bottom:1.6rem;
+}
+.contact-row{
+  display:flex; gap:1.1rem; justify-content:center; flex-wrap:wrap;
+  margin-top:1rem;
+}
+.contact-row a{
+  display:flex; align-items:center; justify-content:center;
+  width:54px; height:54px; border-radius:50%;
+  border:1px solid rgba(246,236,217,.4);
+  color:inherit; text-decoration:none; font-size:1.3rem;
+  transition:.3s;
+}
+.contact-row a:hover{ background:rgba(246,236,217,.15); transform:translateY(-3px); }
+.signature{
+  margin-top:3rem; font-size:.85rem; opacity:.55;
+  font-family:'Helvetica Neue',Arial,sans-serif; letter-spacing:.05em;
+}
+
+/* ---------------- floating music widget ---------------- */
+#musicWidget{
+  position:fixed; bottom:16px; right:16px; z-index:50;
+  width:280px; max-width:80vw;
+  background:rgba(5,6,15,.75);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:14px; padding:10px;
+  backdrop-filter:blur(8px);
+  opacity:0; transform:translateY(12px);
+  transition:opacity .8s ease .3s, transform .8s ease .3s;
+  pointer-events:none;
+}
+#musicWidget.show{ opacity:1; transform:translateY(0); pointer-events:auto; }
+#musicWidget iframe{ border-radius:8px; width:100%; }
+
+@media (max-width:480px){
+  .chapter h2{ font-size:1.5rem; }
+  .chapter p{ font-size:.98rem; }
+  #musicWidget{ width:88vw; right:6vw; bottom:10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ======================= PASSWORD GATE ======================= -->
+<div id="gate">
+  <div class="stars" id="gateStars"></div>
+  <div class="gate-box">
+    <div class="eyebrow">Sesuatu yang aku tulis untukmu</div>
+    <h1>Sefiaa Tri Nur Khotimah</h1>
+    <p class="sub">Silakan masukan pin</p>
+    <form id="gateForm" autocomplete="off">
+      <input type="tel" inputmode="numeric" id="pwInput" placeholder="Pin berisi 15 karakter" maxlength="30">
+      <div class="gate-err" id="gateErr"></div>
+      <button type="submit" class="gate-btn">Buka</button>
+    </form>
+  </div>
+</div>
+
+<!-- ======================= STORY ======================= -->
+<div id="story">
+
+<section class="chapter c0">
+  <div class="stars"></div>
+  <div class="chapter-inner">
+    <!--<span class="eyebrow">Tengah malam</span> -->
+    <h2>Haiii, <h2>Haloo Sefia Tri Nur Khotimah.</h2></h2>
+    <p>Gimana kabarmu akhir-akhir ini? Sekarang aku lagi mikirin kamu ketika membuat ini. Jujur, semenjak saat itu aku jadi sulit tidur, karena merasa ada sesuatu yang hilang sebelum tidur. Tapi aku harap kamu bisa tidur nyenyak, hehe.</p>
+    <p>Makannya yang teratur ya. Kalau bisa, kurangi makan pedas dan minum es kalau lagi kurang enak badan.</p>
+    <p class="quote">Sefiaa, bolehkah aku bercerita? Mungkin agak sedikit panjang, tapi tolong baca ini.</p>
+  </div>
+</section>
+
+<section class="chapter c1">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!--<span class="eyebrow">Pertemuan pertama</span> -->
+    <h2>Pertemuan pertama.</h2>
+    <p>Saat pertama kali aku melihatmu, pikiranku langsung berkata, <em>"orang seperti dia, apakah kelak aku akan mendapatkannya?"</em> Kamu tahu, perasaan itu seperti kamu melihat seorang idol, bisa kau lihat tapi tak bisa kau miliki. Itulah yang ada di pikiranku saat itu.</p>
+  </div>
+</section>
+
+<section class="chapter c2">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">Sebelum tahu namamu</span> -->
+    <h2>yang selalu muncul di kepalaku.</h2>
+    <p>Beberapa hari setelah melihatmu, aku bahkan belum tahu namamu. Tapi kamu selalu muncul di kepalaku, dan aku terus bertanya kenapa. Saat itulah aku sadar, aku menyukaimu bahkan sebelum aku tahu namamu.</p>
+  </div>
+</section>
+
+<section class="chapter c3">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">Fajar mulai merekah</span> -->
+    <h2>"Sefia Tri Nur Khotimah"</h2>
+    <p>Aku berusaha mencari informasi tentangmu, dan akhirnya aku tahu namamu: Sefia Tri Nur Khotimah. "betapa indahnya nama itu" itulah yang muncul dalam pikiranku saat mengetahui namamu, Setelah mengetahui namamu, aku merasa tenang. Rasanya itu sudah cukup membuatku senang saat itu, betapa indahnya masa-masa itu, mendengar namamu saja, aku sudah merasa bahagia.</p>
+  </div>
+</section>
+
+<section class="chapter c4">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">Masa kelulusan</span> -->
+    <h2>Rasa mengagumi.</h2>
+    <p>Singkat cerita, kamu sudah di tahap persiapan kelulusan. Aku hanya melihatmu beberapa kali, tak terlalu sering, dan selalu berpikir itu saja sudah cukup. Sampai akhirnya ada rumor bahwa kamu sudah memiliki seseorang. Saat itu aku sadar, orang yang kukagumi pasti punya pengagum lain selain diriku — dan aku ikut senang, sebab mungkin kamu bahagia karenanya.</p>
+  </div>
+</section>
+
+<section class="chapter c5">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">Hari kelulusan</span> -->
+    <h2>Berjalan ke arah yang berlawanan.</h2>
+    <p>Setelah mengetahui hal itu aku tidak berhenti mengagumimu. dan pada akhirnya hari kelulusan pun tiba, pada saat itu kita pernah saling bertatapan — meski berjalan ke arah yang berlawanan. Mungkin bagimu itu hanya sepersekian detik, tapi bagiku itu momen berkesan yang masih kuingat detailnya sampai sekarang.</p>
+  </div>
+</section>
+
+<section class="chapter c6">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">Beberapa bulan kemudian</span> -->
+    <h2>Kutemukan kamu di dalam yearbook.</h2>
+    <p>Hari-hari berjalan damai, saat aku sedang PKL. Lalu aku menemukanmu di yearbook milik temanku si Dedi — di sana aku mulai mengetahui informsi tentangmu seperti Instagram, nomor telepon, alamat, dan nama panggilanmu, "cepii", hehe. Beberapa hari kemudian aku memberanikan diri mengirim pesan WhatsApp, dan apakah kamu ingat pesan pertama yang aku kirimkan?</p>
+    <p class="quote">"Apa kak Sefia suka menggambar?"</p>
+    <p>Sebuah pertanyaan random yang tiba-tiba muncul di kepalaku. Aku tak berharap banyak, karena tahu kamu sudah memiliki seseorang. Dan benar, kamu membalasnya — tapi jawabannya dingin, dan setelah itu tak lagi membalas pesanku.</p>
+  </div>
+</section>
+
+<section class="chapter c7">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">18 Januari 2026</span> -->
+    <h2>Awal dari semuanya.</h2>
+    <p>Tetapi aku masih menyimpan username Instagram-mu, dan merasa punya satu kesempatan lagi untuk lebih dekat denganmu. Masih ingat saat aku mengirimkan &#127881; di hari ulang tahunmu yang ke-19, hari Minggu, 18 Januari 2026, Sejak itu aku mulai ingin lebih dekat denganmu — dan akhirnya kamu mengirimkan nomor barumu kepadaku.</p>
+  </div>
+</section>
+
+<section class="chapter c8">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">Mulai saling kenal</span> -->
+    <h2>Dari orang asing, jadi terbiasa dengan kehadiranmu.</h2>
+    <p>Kita mulai saling berkenalan dan menjadi lebih dekat, mengobrolkan hal-hal random yang tak pernah kubayangkan. Yang awalnya kita orang asing, kini aku sudah terbiasa dengan kehadiranmu di hari-hariku — dan tak terbayang rasanya jika kehilanganmu.</p>
+    <p>Ingat saat pertama kali kamu call aku, dan bilang itu cuma kepencet? Aku tidak terbiasa bicara dengan perempuan di telepon, kemudian kamu mengajak ku call, tentu aku akan mengangkatnya meski ada rasa canggung saat sedang call denganmu karena itu tidak biasa bagiku. Kamulah perempuan pertama yang mengajakku calling, dan lama-lama aku menjadi terbiasa dengan hal itu dan mungkin sudah menjadi bagian dari keseharianku.</p>
+    <p>Aku mulai mengerti dirimu — ceritamu, perjalananmu, hal yang kamu suka dan hal yang kamu tidak suka, dan banyak detail kecil lain yang kusimpan di memori otak ku. Kamu sudah kuanggap sebagai orang penting dalam hidupku, selain keluargaku dan aku nyaman dengan keberadaanmu di dalam hidupku.</p>
+  </div>
+</section>
+
+<section class="chapter c9">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">Permintaan maaf</span> -->
+    <h2>Maaf soal yang kemarin.</h2>
+    <p>Maaf tentang masa lalu yang pernah kamu ceritakan dan aku selalu membicarakannya. Bukan karena aku tidak bisa menerima masa lalu mu, tetapi aku selalu merasa cemburu "kenapa aku tak bisa melakukan sesuatu kepadamu" jujur aku selalu berpikiran seperti itu. Mungkin rasa cemburuku yang terlalu berlebihan, bahkan setelah kamu berusaha melupakannya, tetapi hatiku merasa cemburu pada hal yang sebenarnya sudah tidak perlu di khawatirkan, dan aku minta maaf soal itu.</p>
+  </div>
+</section>
+
+<section class="chapter c10">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">Yang ingin kukatakan</span> -->
+    <h2>Pengakuan dan Maaf.</h2>
+    <p>Saat ini aku sudah sayang padamu, dan tak terpikir akan kehilanganmu. Aku tidak ingin kita jadi asing. Aku ingin kamu mendengar cerita hidupku, dan aku ingin mendengar tentang hidupmu, walau terkadang rasanya seperti tidak ada yang dibicarakan, tetapi itu sudah cukup bagiku.</p>
+    <p>Maaf jika aku mengganggu hidupmu. Maaf jika aku sering melarangmu makan pedas atau minum es. Maaf jika aku banyak salah. Maaf jika aku tidak berhasil mengerti dirimu. Maaf jika aku terlalu egois. Maaf jika aku terlalu menyukaimu dan itu membuatmu risih. Maaf jika aku terlalu mengharapkanmu karena aku menyukaimu. Maaf jika ku telah menyakiti hatimu. Dan maaf untuk setiap konflik yang pernah kita alami.</p>
+  </div>
+</section>
+
+<section class="chapter c11">
+  <div class="chapter-inner">
+    <span class="phase"></span>
+    <!-- <span class="eyebrow">Harapan</span> -->
+    <h2>Berharap.</h2>
+    <p>Jika aku boleh meminta, aku ingin kamu kembali, kita melakukan hal-hal seperti biasanya. Dan jika itu tak memungkinkan bagimu, aku mengerti bahwa aku sudah terlalu menyakitimu. Aku sedih tak mendapat kabar darimu. Apa batukmu kemarin sudah sembuh? Aku ingin mendengar hal-hal kecil seperti itu, dan itulah yang membuatku senang.</p>
+    <p>Aku ingin kamu tahu bahwa aku akan selalu membuka akses untukmu jika kamu ingin menghubungiku di lain waktu, aku akan selalu menyempatkan diri untukmu. Terima kasih sudah hadir dalam hidupku. Aku merasa tidak ingin kita asing, tapi jika keadaan memaksakan kita untuk asing, aku bisa berbuat apa.</p>
+  </div>
+</section>
+
+<section class="chapter c12">
+  <div class="stars"></div>
+  <div class="chapter-inner">
+    <span class="heart-icon">&hearts;</span>
+    <!-- <span class="eyebrow">Penutup</span> -->
+    <h2>Terima kasih sudah ada di dalam hidupku.</h2>
+    <p>Dengan adanya ini kuharap kamu tahu, kamu telah mendapatkan perhatian yang tulus. Mungkin hanya dengan tulisan ini saja tak cukup untuk membuatmu terkesan, tapi aku menulis ini dari hatiku yang paling dalam.</p>
+    <p>Mungkin sampai di sini dulu — sebenarnya aku ingin menulis lebih dari ini, tapi aku tidak ingin kamu bosan dengan hanya membaca teks panjang.</p>
+    <p>Sefiaa, jika kamu tak membalas pesan ini, mungkin ini pesan terakhir dariku, karena aku tak punya akses lain untuk menghubungimu lewat manapun. Jika benar begitu maka terima kasih sudah pernah ada dalam hidupku. Semoga kita bisa bertemu lagi suatu hari nanti.</p>
+    <p>Terima kasih banyak yaaa Sefiaa. Aku selalu menyukaimu, dari awal kita bertemu.</p>
+    <p>Tapi aku kangen banget jirr lah, tiap malam mikirin kamu "apa kamu juga sulit tidur sepertiku?" Aku selalu menyebutmu dalam doaku. Kurangin makan pedas yaaa, dan kalau batuk, jangan minum es duluu. Aku selalu mengirim selamat malam dan selamat pagii lewat pikiranku, walau kamu tidak bisa merasakannya.</p>
+    <p class="quote">Udah yaaa long text dariku sefiaa, Selamat malamm yaa tidur yang nyenyakk, semoga mimpii indah malam ini dan semoga besok kamu dilancarkan keseharianmu Aminn.</p>
+
+    <div class="contact-title" style="margin-top:3rem;">Aku harap kamu menyempatkan diri untuk menghubungiku.</div>
+    <div class="contact-row">
+      <a href="https://wa.me/qr/GJFPVT42ZFB7C1" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+      <a href="https://www.instagram.com/jubandewan?igsh=bnk0djdyZHg3NDl0" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      <a href="https://line.me/ti/p/VSJzGLChst" target="_blank" rel="noopener" aria-label="Line"><i class="fa-brands fa-line"></i></a>
+      <a href="https://tiktok.com/@dayonewwplayer" target="_blank" rel="noopener" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+    </div>
+    <div class="signature">— Dariku untukmu Sefiaa.</div>
+  </div>
+</section>
+
+</div><!-- /#story -->
+
+<!-- ======================= MUSIC WIDGET ======================= -->
+<div id="musicWidget">
+  <!-- GANTI DI SINI: ganti "src" iframe di bawah dengan link embed lagu pilihanmu.
+       Cara mendapatkannya ada di penjelasan setelah kode ini. -->
+  <iframe id="musicFrame"
+    style="border-radius:8px"
+    src="https://open.spotify.com/embed/track/3weNRklVDqb4Rr5MhKBR3D?utm_source=oembed"
+    width="100%" height="80" frameBorder="0"
+    allowfullscreen=""
+    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+    loading="lazy"></iframe>
+</div>
+
+<script>
+// ---------- generate stars ----------
+document.querySelectorAll('.stars').forEach(container=>{
+  const count = 60;
+  for(let i=0;i<count;i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100+'%';
+    s.style.top = Math.random()*100+'%';
+    s.style.animationDelay = (Math.random()*4)+'s';
+    const size = Math.random()*1.6+1;
+    s.style.width = size+'px';
+    s.style.height = size+'px';
+    container.appendChild(s);
+  }
+});
+
+// ---------- password gate ----------
+const CORRECT_PASSWORD = "123052308181301";
+const gate = document.getElementById('gate');
+const gateForm = document.getElementById('gateForm');
+const pwInput = document.getElementById('pwInput');
+const gateErr = document.getElementById('gateErr');
+const story = document.getElementById('story');
+const musicWidget = document.getElementById('musicWidget');
+const musicFrame = document.getElementById('musicFrame');
+
+gateForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  if(pwInput.value.trim() === CORRECT_PASSWORD){
+    gate.classList.add('hidden');
+    story.classList.add('show');
+    musicWidget.classList.add('show');
+    // reload the music iframe so it counts as a fresh user-gesture-adjacent load
+    musicFrame.src = musicFrame.src;
+    document.body.style.overflow = 'auto';
+    revealOnScroll();
+  } else {
+    gateErr.textContent = "Maaf tapi pinnya adalah lockscreen HP-nya Sefiaa";
+    pwInput.classList.add('shake');
+    setTimeout(()=>pwInput.classList.remove('shake'), 450);
+  }
+});
+
+// ---------- scroll reveal ----------
+function revealOnScroll(){
+  const items = document.querySelectorAll('.chapter-inner');
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+      }
+    });
+  }, {threshold:0.25});
+  items.forEach(item=>obs.observe(item));
+}
+</script>
+</body>
+</html>
